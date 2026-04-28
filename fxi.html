@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geotopia Part 5</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Love+Ya+Like+A+Sister&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    #app-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #container {
+      position: relative;
+      width: 960px;
+      height: 540px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .page {
+      position: absolute;
+      inset: 0;
+      display: none;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    #nav-buttons {
+      margin-top: 10px;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button {
+      font-family: "Comic Sans MS", sans-serif;
+      font-size: 20px;
+      background-color: lightblue;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    .answer-box {
+      position: absolute;
+      box-sizing: border-box;
+      resize: none;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-family: "Comic Sans MS", sans-serif;
+      font-size: 20px;
+      line-height: 1.15;
+      padding: 8px;
+      background: #f2f2f2;
+      color: #000;
+      border: 2px solid #5e5e5e;
+      outline: none;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    #page7-problem {
+      position: absolute;
+      left: 34px;
+      top: 84px;
+      width: 892px;
+      height: 241px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #111;
+      font-family: "Love Ya Like A Sister", cursive;
+      line-height: 1.1;
+      padding: 8px 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .board-box {
+      position: absolute;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    #side-widget {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 200px;
+      height: 200px;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      font-family: "Caveat", cursive;
+      z-index: 999;
+      transition: all 0.25s ease;
+    }
+
+    #side-widget.collapsed {
+      width: 120px;
+      height: 24px;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: rgba(249, 249, 249, 0.95);
+      border: 1px solid #ccc;
+      font-family: "Comic Sans MS", sans-serif;
+      font-size: 8px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    #side-widget.collapsed * {
+      display: none !important;
+    }
+
+    #side-widget.collapsed::after {
+      content: "Translation";
+    }
+
+    #side-widget #collapse-widget {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      line-height: 1;
+      font-size: 14px;
+      background: lightblue;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    #side-widget p.title {
+      font-size: 24px;
+      text-align: center;
+      margin: 0 0 10px;
+    }
+
+    #side-widget button:not(#collapse-widget) {
+      display: block;
+      margin: 0 auto;
+      font-size: 20px;
+      cursor: pointer;
+      text-align: center;
+      background: lightblue;
+      border: none;
+      padding: 10px;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    #side-widget a {
+      display: block;
+      margin: 0 auto;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+      background: lightblue;
+      border: none;
+      padding: 6px;
+      text-decoration: none;
+      color: inherit;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    #selection-overlay {
+      position: fixed;
+      inset: 0;
+      cursor: crosshair;
+      z-index: 1000;
+    }
+
+    #selection-box {
+      position: absolute;
+      border: 2px dashed red;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    #popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    #popup-window {
+      width: 320px;
+      background: #fff;
+      border: 3px solid #333;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    #popup-message {
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: #111;
+    }
+
+    #page5-input {
+      color: red;
+      caret-color: red;
+      font-size: 80px;
+      line-height: 109px;
+      padding: 0;
+      text-align: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    #page7-input {
+      font-size: 48px;
+      text-align: center;
+      padding: 0;
+      line-height: 109px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    #transition-overlay {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 900;
+      transition: opacity 280ms ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    <div id="container">
+      <div id="page1" class="page active" style="background-image:url('https://daryeaye.github.io/geotopia2/12-01.jpg');"></div>
+      <div id="page2" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-02.jpg');"></div>
+      <div id="page3" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-03.jpg');"></div>
+      <div id="page4" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-04.jpg');"></div>
+
+      <div id="page5" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-05.jpg');">
+        <textarea id="page5-input" class="answer-box" style="left:392px; top:417px; width:176px; height:113px;"></textarea>
+      </div>
+
+      <div id="page6" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-06.jpg');">
+        <div class="board-box" style="left:49px; top:60px; width:115px; height:115px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:188px; top:60px; width:115px; height:115px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:327px; top:60px; width:115px; height:115px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:518px; top:60px; width:115px; height:115px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:657px; top:60px; width:115px; height:115px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:796px; top:60px; width:115px; height:115px;" onclick="chooseBoardBox(false)"></div>
+
+        <div class="board-box" style="left:188px; top:210px; width:115px; height:160px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:327px; top:210px; width:115px; height:160px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:466px; top:210px; width:115px; height:160px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:518px; top:210px; width:115px; height:160px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:796px; top:210px; width:115px; height:160px;" onclick="chooseBoardBox(true)"></div>
+
+        <div class="board-box" style="left:49px; top:390px; width:115px; height:150px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:188px; top:390px; width:115px; height:150px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:327px; top:390px; width:115px; height:150px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:518px; top:390px; width:115px; height:150px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:657px; top:390px; width:115px; height:150px;" onclick="chooseBoardBox(false)"></div>
+        <div class="board-box" style="left:796px; top:390px; width:115px; height:150px;" onclick="chooseBoardBox(false)"></div>
+      </div>
+
+      <div id="page7" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-07.jpg');">
+        <div id="page7-problem"></div>
+        <textarea id="page7-input" class="answer-box" style="left:392px; top:417px; width:176px; height:113px;"></textarea>
+      </div>
+
+      <div id="page8" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-08.jpg');"></div>
+      <div id="page9" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-09.jpg');"></div>
+      <div id="page10" class="page" style="background-image:url('https://daryeaye.github.io/geotopia2/12-10.jpg');"></div>
+      <div id="transition-overlay"></div>
+    </div>
+
+    <div id="nav-buttons"></div>
+  </div>
+
+  <div id="side-widget" class="collapsed" aria-label="Translation widget">
+    <button id="collapse-widget" type="button" aria-label="Collapse translation widget">–</button>
+    <p class="title">Need translation?</p>
+    <button id="select-text" type="button">Select Text</button>
+    <p><a href="https://translate.google.com/?sl=en&tl=es&op=images" target="_blank">Click me and paste from clipboard</a></p>
+  </div>
+
+  <div id="popup-overlay">
+    <div id="popup-window">
+      <div id="popup-message">Incorrect Key</div>
+      <button onclick="closePopup()">OK</button>
+    </div>
+  </div>
+
+  <script>
+    const totalPages = 10;
+    let currentPage = 1;
+    let page7Destination = 8;
+    let currentProblem = null;
+    let isTransitioning = false;
+
+    const problems = [
+      { text: 'A triangle has a base of 10 cm and a height of 6 cm. Find the area.', answer: '30' },
+      { text: 'A triangle has a base of 14 m and a height of 9 m. Find the area.', answer: '63' },
+      { text: 'A triangle has a base of 12 in and a height of 5 in. Find the area.', answer: '30' },
+      { text: 'A triangle has a base of 18 ft and a height of 7 ft. Find the area.', answer: '63' },
+      { text: 'A trapezoid has bases of 8 cm and 12 cm, and a height of 5 cm. Find the area.', answer: '50' },
+      { text: 'A trapezoid has bases of 10 m and 16 m, and a height of 6 m. Find the area.', answer: '78' },
+      { text: 'A trapezoid has bases of 9 in and 15 in, and a height of 4 in. Find the area.', answer: '48' },
+      { text: 'A trapezoid has bases of 20 ft and 14 ft, and a height of 8 ft. Find the area.', answer: '136' },
+      { text: 'A parallelogram has a base of 8 cm and a height that is 2 cm more than the base. Find the area.', answer: '80' },
+      { text: 'A parallelogram has a base of 10 m and a height that is 4 m more than the base. Find the area.', answer: '140' },
+      { text: 'A parallelogram has a base of 12 in and a height that is 3 in less than the base. Find the area.', answer: '108' },
+      { text: 'A parallelogram has a base of 11 ft and a height that is 3 ft more than the base. Find the area.', answer: '154' }
+    ];
+
+    function showPopup(message = 'Incorrect Key') {
+      document.getElementById('popup-message').textContent = message;
+      document.getElementById('popup-overlay').style.display = 'flex';
+    }
+
+    function closePopup() {
+      document.getElementById('popup-overlay').style.display = 'none';
+    }
+
+    function getPageElement(pageNum) {
+      return document.getElementById('page' + pageNum);
+    }
+
+    function activatePage(pageNum) {
+      for (let i = 1; i <= totalPages; i++) {
+        getPageElement(i).classList.remove('active');
+      }
+      getPageElement(pageNum).classList.add('active');
+      currentPage = pageNum;
+      renderNavButtons();
+
+      if (pageNum === 7) {
+        loadRandomProblem();
+        const input = document.getElementById('page7-input');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function showPage(pageNum, useTransition = true) {
+      if (pageNum < 1 || pageNum > totalPages || isTransitioning) return;
+
+      const targetPage = getPageElement(pageNum);
+      const alreadyActive = targetPage && targetPage.classList.contains('active');
+      if (alreadyActive && pageNum === currentPage) {
+        activatePage(pageNum);
+        return;
+      }
+
+      const overlay = document.getElementById('transition-overlay');
+      const nav = document.getElementById('nav-buttons');
+
+      if (!useTransition || !overlay) {
+        activatePage(pageNum);
+        return;
+      }
+
+      isTransitioning = true;
+      if (nav) nav.style.pointerEvents = 'none';
+      overlay.style.opacity = '1';
+
+      setTimeout(() => {
+        activatePage(pageNum);
+        overlay.style.opacity = '0';
+
+        setTimeout(() => {
+          isTransitioning = false;
+          if (nav) nav.style.pointerEvents = '';
+        }, 320);
+      }, 280);
+    }
+
+    function renderNavButtons() {
+      const nav = document.getElementById('nav-buttons');
+      nav.innerHTML = '';
+      nav.style.display = 'flex';
+
+      if (currentPage === 7) {
+        const checkBtn = makeNavButton('Check My Answer', () => checkPage7Answer(true));
+        nav.appendChild(checkBtn);
+        return;
+      }
+
+      if (currentPage === 8) {
+        const backBtn = makeNavButton('Back to the board', () => showPage(6));
+        nav.appendChild(backBtn);
+        return;
+      }
+
+      if (currentPage === 9) {
+        const nextBtn = makeNavButton('Next', () => showPage(10));
+        nav.appendChild(nextBtn);
+        return;
+      }
+
+      if (currentPage === 10) {
+        const prevBtn = makeNavButton('Previous', () => showPage(9));
+        nav.appendChild(prevBtn);
+        return;
+      }
+
+      if (currentPage === 6) {
+        const prevBtn = makeNavButton('Previous', prevPage);
+        nav.appendChild(prevBtn);
+        return;
+      }
+
+      if (currentPage === 1) {
+        const nextBtn = makeNavButton('Next', nextPage);
+        nav.appendChild(nextBtn);
+        return;
+      }
+
+      const prevBtn = makeNavButton('Previous', prevPage);
+      nav.appendChild(prevBtn);
+
+      const nextBtn = makeNavButton('Next', nextPage);
+      nav.appendChild(nextBtn);
+    }
+
+    function makeNavButton(label, handler) {
+      const btn = document.createElement('button');
+      btn.textContent = label;
+      btn.onclick = handler;
+      return btn;
+    }
+
+    function nextPage() {
+      if (currentPage === 5) {
+        checkPage5Answer(true);
+        return;
+      }
+      if (currentPage < totalPages) {
+        showPage(currentPage + 1);
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        showPage(currentPage - 1);
+      }
+    }
+
+    function chooseBoardBox(isKey) {
+      page7Destination = isKey ? 9 : 8;
+      showPage(7);
+    }
+
+    function loadRandomProblem() {
+      currentProblem = problems[Math.floor(Math.random() * problems.length)];
+      const problemBox = document.getElementById('page7-problem');
+      problemBox.textContent = currentProblem.text;
+      fitProblemText(problemBox, 44, 20);
+    }
+
+    function fitProblemText(el, startSize, minSize) {
+      let size = startSize;
+      el.style.fontSize = size + 'px';
+      while ((el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth) && size > minSize) {
+        size -= 1;
+        el.style.fontSize = size + 'px';
+      }
+    }
+
+    function checkPage5Answer(fromButton = false) {
+      const input = document.getElementById('page5-input');
+      const value = input.value.trim();
+      if (value === '7090') {
+        showPage(6);
+        return;
+      }
+      if (fromButton || value.replace(/\s/g, '').length >= 4) {
+        showPopup('Incorrect Key');
+      }
+    }
+
+    function isPage7AnswerCorrect(value) {
+      const correctAnswer = Number(currentProblem.answer);
+      const numbers = value.match(/-?\d+(?:\.\d+)?/g) || [];
+      return numbers.some(num => Number(num) === correctAnswer);
+    }
+
+    function checkPage7Answer(forceCheck = false) {
+      if (!currentProblem) return;
+      const input = document.getElementById('page7-input');
+      const value = input.value.trim();
+      if (isPage7AnswerCorrect(value)) {
+        showPage(page7Destination);
+        return;
+      }
+      if (forceCheck) {
+        showPopup('Incorrect answer 💀');
+      }
+    }
+
+    document.getElementById('page5-input').addEventListener('input', function () {
+      const value = this.value.trim();
+      if (value === '7090') {
+        showPage(6);
+      } else if (value.replace(/\s/g, '').length >= 4) {
+        showPopup('Incorrect Key');
+      }
+    });
+
+    document.getElementById('page5-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkPage5Answer(true);
+      }
+    });
+
+    document.getElementById('page7-input').addEventListener('input', function () {
+      // Page 7 only checks after the user clicks "Check My Answer" or presses Enter.
+    });
+
+    document.getElementById('page7-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkPage7Answer(true);
+      }
+    });
+
+    (function () {
+      const widget = document.getElementById('side-widget');
+      const collapseBtn = document.getElementById('collapse-widget');
+
+      widget.addEventListener('click', function () {
+        if (widget.classList.contains('collapsed')) {
+          widget.classList.remove('collapsed');
+        }
+      });
+
+      collapseBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        widget.classList.add('collapsed');
+      });
+    })();
+
+    document.getElementById('select-text').addEventListener('click', function () {
+      const overlay = document.createElement('div');
+      overlay.id = 'selection-overlay';
+      document.body.appendChild(overlay);
+
+      let startX, startY, selectionBox;
+
+      overlay.addEventListener('mousedown', function (e) {
+        startX = e.clientX;
+        startY = e.clientY;
+
+        selectionBox = document.createElement('div');
+        selectionBox.id = 'selection-box';
+        selectionBox.style.left = startX + 'px';
+        selectionBox.style.top = startY + 'px';
+        selectionBox.style.width = '0px';
+        selectionBox.style.height = '0px';
+        overlay.appendChild(selectionBox);
+
+        function mouseMoveHandler(ev) {
+          const currentX = ev.clientX;
+          const currentY = ev.clientY;
+          const rectLeft = Math.min(startX, currentX);
+          const rectTop = Math.min(startY, currentY);
+          const rectWidth = Math.abs(currentX - startX);
+          const rectHeight = Math.abs(currentY - startY);
+          selectionBox.style.left = rectLeft + 'px';
+          selectionBox.style.top = rectTop + 'px';
+          selectionBox.style.width = rectWidth + 'px';
+          selectionBox.style.height = rectHeight + 'px';
+        }
+
+        function mouseUpHandler() {
+          overlay.removeEventListener('mousemove', mouseMoveHandler);
+          overlay.removeEventListener('mouseup', mouseUpHandler);
+
+          const boxRect = selectionBox.getBoundingClientRect();
+          document.body.removeChild(overlay);
+
+          const target = document.getElementById('container');
+          const targetRect = target.getBoundingClientRect();
+
+          html2canvas(target, { useCORS: true, allowTaint: false }).then(canvas => {
+            const scaleFactor = canvas.width / targetRect.width;
+            const sx = (boxRect.left - targetRect.left) * scaleFactor;
+            const sy = (boxRect.top - targetRect.top) * scaleFactor;
+            const sWidth = boxRect.width * scaleFactor;
+            const sHeight = boxRect.height * scaleFactor;
+
+            const croppedCanvas = document.createElement('canvas');
+            croppedCanvas.width = sWidth;
+            croppedCanvas.height = sHeight;
+            const ctx = croppedCanvas.getContext('2d');
+            ctx.drawImage(canvas, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
+
+            croppedCanvas.toBlob(blob => {
+              if (blob) {
+                const item = new ClipboardItem({ 'image/png': blob });
+                navigator.clipboard.write([item]).then(() => {
+                  showPopup('Screenshot copied to clipboard.');
+                }).catch(() => {
+                  showPopup('Failed to copy screenshot to clipboard.');
+                });
+              }
+            });
+          });
+        }
+
+        overlay.addEventListener('mousemove', mouseMoveHandler);
+        overlay.addEventListener('mouseup', mouseUpHandler);
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      showPage(1, false);
+    });
+  </script>
+</body>
+</html>
